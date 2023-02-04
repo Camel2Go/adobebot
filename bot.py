@@ -14,6 +14,11 @@ import json
 import logging
 import time
 
+class AuthorFilter(logging.Filter):
+	def filter(self, record):
+		record.author = str(ctx_author.get())
+		return True
+
 dirname = path.dirname(__file__) + "/"
 
 authorized = json.loads(open(dirname + "authorized.json").read())
@@ -25,18 +30,17 @@ client = discord.Client(intents=intents)
 options = FirefoxOptions()
 options.add_argument('--headless')
 
-ctx_author = ContextVar("author")
+ctx_author = ContextVar("author", default = "unknown")
 
-log_filename = dirname + "bot.log"
-log_format = "%(asctime)s :: %(levelname)-8s :: %(author)-12s :: %(message)s"
-log_datefmt = "%Y-%m-%d %H:%M:%S"
-logging.basicConfig(filename = log_filename, format = log_format, datefmt = log_datefmt, level = logging.INFO)
-logging.getLogger().addFilter(AuthorFilter())
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+handler = logging.FileHandler(dirname + "bot.log")
+fmt = logging.Formatter(fmt =  "[%(asctime)s] [%(levelname)-8s] %(author)-12s : %(message)s", datefmt = "%Y-%m-%d %H:%M:%S")
+handler.setLevel(logging.INFO)
+handler.setFormatter(fmt)
+handler.addFilter(AuthorFilter())
+log.addHandler(handler)
 
-class AuthorFilter(logging.Filter):
-	def filter(self, record):
-		record.author = ctx_author.get()
-		return True
 
 async def login(driver, url, channel):
 	
@@ -81,7 +85,8 @@ async def login(driver, url, channel):
 
 @client.event
 async def on_ready():
-	print(f'logged in as {client.user}')
+	ctx_author.set(client.user)
+	log.info("successfully logged in")
 
 
 @client.event
@@ -92,28 +97,28 @@ async def on_message(message):
 
 	ctx_author.set(message.author)
 
-	if message.author not in authorized:
-		logging.info("unauthorized, content: \"" + message.content + "\"")
+	if str(message.author) not in authorized:
+		log.info("unauthorized, content: \"" + message.content + "\"")
 		await message.channel.send("[\U0001f47a\ufe0f] unauthorized!")
 	
 	elif "https://auth.services.adobe.com/de_DE/deeplink.html?deeplink=ssofirst&callback" not in message.content:
-		logging.info("not a valid url, content: \"" + message.content + "\"")
+		log.info("not a valid url, content: \"" + message.content + "\"")
 		await message.channel.send("[\U0001f47a\ufe0f] not a valid url!")
 
 	else:
 
-		logging.info("logging in to creative cloud")
+		log.info("logging in to creative cloud")
 		await message.channel.send("[\U0001f468\u200d\U0001f4bb\ufe0f] opening new firefox session...")
 		
 		driver = await asyncio.get_running_loop().run_in_executor(None, partial(webdriver.Firefox, options = options))
 
 		try:
 			await login(driver, message.content, message.channel)
-			logging.info("success")
+			log.info("success")
 
 		except (TimeoutException, AssertionError) as e:
-			logging.error(e)
-			with open(time.strftime(dirname + "%Y-%m-%d_%H:%M:%S.html", "wb")) as file:
+			log.exception(e)
+			with open(dirname + time.strftime("%Y-%m-%d_%H:%M:%S.html"), "w") as file:
 				file.write(driver.page_source)
 			await message.channel.send("[\u274c\ufe0f] an error occured!")
 			await message.channel.send(file = discord.File(BytesIO(driver.get_screenshot_as_png()), "screenshot.png"))
@@ -123,8 +128,8 @@ async def on_message(message):
 
 
 if __name__ == "__main__":
-	client.run(credentials["token"])
 
+	client.run(credentials["token"], log_handler = logging.FileHandler(dirname + "bot.log"))
 
 
 
