@@ -110,7 +110,7 @@ async def on_message(message):
 		log.info("logging in to creative cloud")
 		await message.channel.send("[\U0001f468\u200d\U0001f4bb\ufe0f] opening new firefox session...")
 		
-		driver = await asyncio.get_running_loop().run_in_executor(None, partial(webdriver.Firefox, options = options))
+		driver = await asyncio.get_running_loop().run_in_executor(None, partial(webdriver.Firefox, options = options, service_log_path = dirname + "geckodriver.log"))
 
 		try:
 			await login(driver, message.content, message.channel)
