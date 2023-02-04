@@ -1,18 +1,18 @@
-import discord
-import time
-import asyncio
+from contextvars import ContextVar
 from functools import partial
 from io import BytesIO
+from os import path
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver import FirefoxOptions
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import TimeoutException
-import logging
-from contextvars import ContextVar
-from os import path
+import asyncio
+import discord
 import json
+import logging
+import time
 
 authorized = json.loads(open("authorized.json").read())
 credentials = json.loads(open("credentials.json").read())
@@ -111,7 +111,7 @@ async def on_message(message):
 
 		except (TimeoutException, AssertionError) as e:
 			logging.error(e)
-			with open(time.strftime("%Y-%m-%d_%H:%M:%S.html", "wb")) as file:
+			with open(time.strftime(path.dirname(__file__) + "/" + "%Y-%m-%d_%H:%M:%S.html", "wb")) as file:
 				file.write(driver.page_source)
 			await message.channel.send("[\u274c\ufe0f] an error occured!")
 			await message.channel.send(file = discord.File(BytesIO(driver.get_screenshot_as_png()), "screenshot.png"))
