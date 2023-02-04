@@ -1,7 +1,6 @@
 from contextvars import ContextVar
 from functools import partial
 from io import BytesIO
-from json import loads
 from os import path
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
@@ -11,6 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from time import strftime
 import asyncio
 import discord
+import json
 import logging
 
 # filter for using author of message in logging
