@@ -14,8 +14,10 @@ import json
 import logging
 import time
 
-authorized = json.loads(open("authorized.json").read())
-credentials = json.loads(open("credentials.json").read())
+dirname = path.dirname(__file__) + "/"
+
+authorized = json.loads(open(dirname + "authorized.json").read())
+credentials = json.loads(open(dirname + "credentials.json").read())
 
 intents = discord.Intents.default()
 client = discord.Client(intents=intents)
@@ -25,7 +27,7 @@ options.add_argument('--headless')
 
 ctx_author = ContextVar("author")
 
-log_filename = path.dirname(__file__) + "bot.log"
+log_filename = dirname + "bot.log"
 log_format = "%(asctime)s :: %(levelname)-8s :: %(author)-12s :: %(message)s"
 log_datefmt = "%Y-%m-%d %H:%M:%S"
 logging.basicConfig(filename = log_filename, format = log_format, datefmt = log_datefmt, level = logging.INFO)
@@ -34,7 +36,7 @@ logging.getLogger().addFilter(AuthorFilter())
 class AuthorFilter(logging.Filter):
 	def filter(self, record):
 		record.author = ctx_author.get()
-
+		return True
 
 async def login(driver, url, channel):
 	
@@ -53,8 +55,8 @@ async def login(driver, url, channel):
 	assert driver.title == "Web login service for members of Technische Universität Dresden", "title of shibboleth was wrong!"
 
 	await channel.send("[\U0001f47e\ufe0f] filling in credentials...")
-	driver.find_element(by = By.ID, value = bytes.fromhex("757365726e616d65").decode()).send_keys(credentials["user"])
-	driver.find_element(by = By.ID, value = bytes.fromhex("70617373776f7264").decode()).send_keys(credentials["passwd"])
+	driver.find_element(by = By.ID, value = "username").send_keys(credentials["user"])
+	driver.find_element(by = By.ID, value = "password").send_keys(credentials["passwd"])
 	driver.find_element(by = By.NAME, value = "donotcache").click()
 	driver.find_element(by = By.NAME, value = "_eventId_proceed").click()
 
@@ -111,7 +113,7 @@ async def on_message(message):
 
 		except (TimeoutException, AssertionError) as e:
 			logging.error(e)
-			with open(time.strftime(path.dirname(__file__) + "/" + "%Y-%m-%d_%H:%M:%S.html", "wb")) as file:
+			with open(time.strftime(dirname + "%Y-%m-%d_%H:%M:%S.html", "wb")) as file:
 				file.write(driver.page_source)
 			await message.channel.send("[\u274c\ufe0f] an error occured!")
 			await message.channel.send(file = discord.File(BytesIO(driver.get_screenshot_as_png()), "screenshot.png"))
