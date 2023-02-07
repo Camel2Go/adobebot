@@ -5,7 +5,7 @@ import discord
 import json
 import logging
 import adobe
-import ai
+# import ai
 import re
 
 dirname = path.dirname(__file__) + "/"
@@ -15,7 +15,7 @@ authorized = json.loads(open(dirname + "authorized.json").read())
 credentials = json.loads(open(dirname + "credentials.json").read())
 
 # init openai
-ai.set_api_key(credentials["openai"])
+# ai.set_api_key(credentials["openai"])
 
 # init discord client only subscribing to dms
 intents = discord.Intents(dm_messages = True)
