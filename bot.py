@@ -1,6 +1,5 @@
 from contextvars import ContextVar
 from os import path
-from time import strftime
 import discord
 import json
 import logging
@@ -64,7 +63,7 @@ async def on_message(message):
 
 	# handle requests for adobe
 	if re.match("https:\/\/auth\.services\.adobe\.com\/[a-z]{2}_[A-Z]{2}\/deeplink\.html\?deeplink=ssofirst&callback", message.content) != None and str(message.author) in authorized["adobe"]:
-		await adobe.login(dirname, message.content, message.channel, log)
+		await adobe.login(dirname, message.content, credentials, message.channel, log)
 
 	# handle requests for davinci-model
 	# elif message.content in ["davinci", "prompt"] and str(message.author) in authorized["chatgpt"]:
