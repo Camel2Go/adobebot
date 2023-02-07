@@ -63,7 +63,7 @@ async def on_message(message):
 	ctx_author.set(message.author)
 
 	# handle requests for adobe
-	if re.match("https:\/\/auth\.services\.adobe\.com\/[a-z]{2}_[A-Z]{2}\/deeplink\.html\?deeplink=ssofirst&callback", message.content) != None and str(message.user) in authorized["adobe"]:
+	if re.match("https:\/\/auth\.services\.adobe\.com\/[a-z]{2}_[A-Z]{2}\/deeplink\.html\?deeplink=ssofirst&callback", message.content) != None and str(message.author) in authorized["adobe"]:
 		await adobe.login(options, dirname, message.content, message.channel, log)
 
 	# handle requests for davinci-model
