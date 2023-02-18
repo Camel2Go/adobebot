@@ -1,5 +1,5 @@
-credentials.json
-authorized.json
+data.json
 data
 bot.log
 geckodriver.log
+__pycache__

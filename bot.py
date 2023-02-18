@@ -1,28 +1,36 @@
+# import ai
 from contextvars import ContextVar
 from os import path
+import adobe
+import datetime
 import discord
 import json
 import logging
-import adobe
-# import ai
 import re
 
 dirname = path.dirname(__file__) + "/"
 
 # read credentials and authorization
-authorized = json.loads(open(dirname + "authorized.json").read())
-credentials = json.loads(open(dirname + "credentials.json").read())
+credentials, authorized, to_track = json.loads(open(dirname + "data.json").read()).values()
 
 # init openai
 # ai.set_api_key(credentials["openai"])
 
 # init discord client only subscribing to dms
-intents = discord.Intents(dm_messages = True)
+intents = discord.Intents(dm_messages = True, members = True, presences = True, guilds = True)
 client = discord.Client(intents=intents)
 
 
 # init contextvar for author of message to be used inside other classes/functions
 ctx_author = ContextVar("author", default = "unknown")
+
+color_table = {
+	discord.Status.online: discord.Color.green(),
+	discord.Status.offline: discord.Color.dark_gray(),
+	discord.Status.idle: discord.Color.gold(),
+	discord.Status.dnd: discord.Color.red(),
+}
+
 
 
 # filter for using author of message in logging
@@ -40,7 +48,6 @@ handler.setLevel(logging.INFO)
 handler.setFormatter(fmt)
 handler.addFilter(AuthorFilter())
 log.addHandler(handler)
-
 
 
 # event when bot is successfully logged in
@@ -77,6 +84,17 @@ async def on_message(message):
 		log.info("\"" + message.content + "\"")
 		await message.channel.send("\U0001f47a\ufe0f")
 		
+@client.event
+async def on_presence_update(before, after):
+	channel = client.get_channel(1076428584316583987)
+	if str(after) in to_track:
+		if before.mobile_status != after.mobile_status:
+			await channel.send(embed = discord.Embed(title = after.name, description = "Handy ist jetzt " + str(after.mobile_status), color = color_table[after.mobile_status], timestamp = datetime.datetime.now()))
+		if before.desktop_status != after.desktop_status:
+			await channel.send(embed = discord.Embed(title = after.name, description = "Laptop ist jetzt " + str(after.desktop_status), color = color_table[after.desktop_status], timestamp = datetime.datetime.now()))
+		if before.web_status != after.web_status:
+			await channel.send(embed = discord.Embed(title = after.name, description = "Web-Session ist jetzt " + str(after.web_status), color = color_table[after.web_status], timestamp = datetime.datetime.now()))
+
 
 if __name__ == "__main__":
 	# run discord.py with bot-token and proper logging 
