@@ -1,5 +1,6 @@
-data.json
+secrets.json
 data
 bot.log
 geckodriver.log
+*.html
 __pycache__

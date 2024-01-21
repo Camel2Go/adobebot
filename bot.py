@@ -1,4 +1,3 @@
-# import ai
 from contextvars import ContextVar
 from os import path
 import adobe
@@ -11,10 +10,7 @@ import re
 dirname = path.dirname(__file__) + "/"
 
 # read credentials and authorization
-credentials, authorized, to_track = json.loads(open(dirname + "data.json").read()).values()
-
-# init openai
-# ai.set_api_key(credentials["openai"])
+credentials, authorized, to_track = json.loads(open(dirname + "secrets.json").read()).values()
 
 # init discord client only subscribing to dms
 intents = discord.Intents(dm_messages = True, members = True, presences = True, guilds = True)
@@ -69,21 +65,13 @@ async def on_message(message):
 	ctx_author.set(message.author)
 
 	# handle requests for adobe
-	if re.match("https:\/\/auth\.services\.adobe\.com\/[a-z]{2}_[A-Z]{2}\/deeplink\.html\?deeplink=ssofirst&callback", message.content) != None and str(message.author) in authorized["adobe"]:
+	if re.match("https:\/\/auth\.services\.adobe\.com\/[a-z]{2}_[A-Z]{2}\/deeplink\.html\?deeplink=ssofirst&callback", message.content) != None and str(message.author) in authorized:
 		await adobe.login(dirname, message.content, credentials, message.channel, log)
-
-	# handle requests for davinci-model
-	# elif message.content in ["davinci", "prompt"] and str(message.author) in authorized["chatgpt"]:
-	# 	await ai.prompt(message.content, message.channel, log)
-
-	# handle requests for dalle-endpoint
-	# elif message.content in ["dalle", "image"] and str(message.author) in authorized["chatgpt"]:
-	# 	await ai.image(message.content, message.channel, log)
 
 	else:
 		log.info("\"" + message.content + "\"")
 		await message.channel.send("\U0001f47a\ufe0f")
-		
+
 @client.event
 async def on_presence_update(before, after):
 	channel = client.get_channel(1076428584316583987)
@@ -97,7 +85,7 @@ async def on_presence_update(before, after):
 
 
 if __name__ == "__main__":
-	# run discord.py with bot-token and proper logging 
+	# run discord.py with bot-token and proper logging
 	client.run(credentials["discord"], log_handler = logging.FileHandler(dirname + "bot.log"))
 
 
