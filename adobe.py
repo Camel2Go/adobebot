@@ -46,7 +46,7 @@ async def login(dirname, url, credentials, channel, log):
 		driver.find_element(by = By.NAME, value = "_eventId_proceed").click()
 
 		await channel.send("[\U0001f4a4\ufe0f] waiting for shibboleth's TOTP page...")
-		WebDriverWait(driver, 20).until(expected_conditions.presence_of_element_located((By.ID, 'username')))
+		WebDriverWait(driver, 20).until(expected_conditions.presence_of_element_located((By.ID, 'fudis_otp_input')))
 		assert driver.title == "Web login service for members of TUD Dresden University of Technology", "title of tu's shibboleth's TOTP page is wrong!"
 
 		await channel.send("[\U0001f47e\ufe0f] filling in TOTP...")
