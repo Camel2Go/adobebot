@@ -1,12 +1,12 @@
 [Unit]
-Description=discord bot AdobeBot for adobe cloud login
+Description=discord bot for distributed adobe cloud login
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 /home/dietpi/adobebot/bot.py
+ExecStart=/usr/bin/python3 /home/user/adobebot/bot.py
 Environment=PYTHONUNBUFFERED=1
 
 [Install]
-WantedBy=mutli-user.target
+WantedBy=default.target

@@ -64,12 +64,13 @@ async def on_message(message):
 	# set the contextvar to the current author
 	ctx_author.set(message.author)
 
+	log.info(str(message.author) + ": " + message.content)
+
 	# handle requests for adobe
 	if re.match("https:\/\/auth\.services\.adobe\.com\/[a-z]{2}_[A-Z]{2}\/deeplink\.html\?deeplink=ssofirst&callback", message.content) != None and str(message.author) in authorized:
 		await adobe.login(dirname, message.content, credentials, message.channel, log)
 
 	else:
-		log.info("\"" + message.content + "\"")
 		await message.channel.send("\U0001f47a\ufe0f")
 
 @client.event
